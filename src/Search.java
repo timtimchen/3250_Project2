@@ -9,11 +9,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Collections;
-import java.util.AbstractMap;
 import java.util.stream.Stream;
 
+import javafx.util.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -44,7 +43,7 @@ public class Search {
   /**
    * A frequency order index of words.
    */
-  private ArrayList<Map.Entry<String, Integer>> wordFrequencyIndex = null;
+  private ArrayList<Pair<String, Integer>> wordFrequencyIndex = null;
 
   /**
    * An inner class for storing information of each found word.
@@ -157,7 +156,7 @@ public class Search {
     wordFrequencyIndex = new ArrayList<>();
     for (String key : words.keySet()) {
       wordFrequencyIndex
-        .add(new AbstractMap.SimpleEntry(key, words.get(key).size()));
+        .add(new Pair<String, Integer>(key, words.get(key).size()));
     }
     Collections.sort(wordFrequencyIndex, (m1, m2) -> {
       if (m1.getValue() == m2.getValue()) {
@@ -204,14 +203,25 @@ public class Search {
    */
   public void printResult(final int printNumber) {
     int count;
-    System.out.println("\nLinks: " + links.size());
+    System.out.printf("\nFirst %d Links, actually count: %d\n",
+      printNumber, links.size());
+    count = 0;
     for (String link : links) {
+      count++;
+      if (count > printNumber) {
+        break;
+      }
       System.out.println(link);
     }
-    System.out.printf("\nTop %d words sorted in alphabetical order, "
+    System.out.printf("\nFirst %d words sorted in alphabetical order, "
       + "format:[(position, isCapitalized)] :\n", printNumber);
     count = 0;
     for (String keyword : keywordIndex) {
+      // filter out keyword 'a', 'and', 'the'
+      if (keyword.equals("a") || keyword.equals("and")
+        || keyword.equals("the")) {
+        continue;
+      }
       count++;
       if (count > printNumber) {
         break;
@@ -219,10 +229,15 @@ public class Search {
       System.out.printf("%s : %s \n", keyword,
         printNodeInfo(words.get(keyword)));
     }
-    System.out.printf("\nTop %d words sortecd in frequency order: \n",
+    System.out.printf("\nFirst %d words sortecd in frequency order: \n",
       printNumber);
     count = 0;
-    for (Map.Entry entry : wordFrequencyIndex) {
+    for (Pair<String, Integer> entry : wordFrequencyIndex) {
+      // filter out keyword 'a', 'and', 'the'
+      if (entry.getKey().equals("a") || entry.getKey().equals("and")
+        || entry.getKey().equals("the")) {
+        continue;
+      }
       count++;
       if (count > printNumber) {
         break;
